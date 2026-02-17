@@ -1,1 +1,656 @@
-a
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chuyển Đổi Định Dạng Hình Ảnh</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .upload-section {
+            margin-bottom: 30px;
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 10px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8f9ff;
+        }
+
+        .upload-area:hover {
+            background: #f0f2ff;
+            border-color: #764ba2;
+        }
+
+        .upload-area.dragover {
+            background: #e8ebff;
+            border-color: #764ba2;
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .upload-subtext {
+            color: #999;
+            font-size: 12px;
+        }
+
+        #imageInput {
+            display: none;
+        }
+
+        .image-preview {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .image-info {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .info-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .format-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .format-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 10px;
+        }
+
+        .format-btn {
+            padding: 12px 8px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            color: #333;
+        }
+
+        .format-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .format-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .quality-section {
+            margin-bottom: 25px;
+        }
+
+        .quality-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .quality-slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .quality-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .quality-slider::-webkit-slider-thumb:hover {
+            background: #764ba2;
+            transform: scale(1.2);
+        }
+
+        .quality-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s ease;
+        }
+
+        .quality-slider::-moz-range-thumb:hover {
+            background: #764ba2;
+            transform: scale(1.2);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+
+        .btn-convert {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-convert:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-convert:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-reset {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-reset:hover {
+            background: #e0e0e0;
+        }
+
+        .message {
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            font-size: 14px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #667eea;
+            font-weight: 600;
+            margin: 15px 0;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .setting-item label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .setting-item input[type="number"],
+        .setting-item select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .footer a:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+
+        .copyright {
+            color: #999;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 25px;
+            }
+
+            h1 {
+                font-size: 22px;
+            }
+
+            .format-grid {
+                grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+            }
+
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🖼️ Chuyển Đổi Hình Ảnh</h1>
+        <p class="subtitle">Hỗ trợ các định dạng phổ biến: PNG, JPG, WebP, BMP, GIF</p>
+
+        <div id="message" class="message"></div>
+
+        <div class="upload-section">
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📤</div>
+                <div class="upload-text">Kéo hình ảnh vào đây</div>
+                <div class="upload-subtext">hoặc nhấp để chọn file</div>
+                <input type="file" id="imageInput" accept="image/*">
+            </div>
+
+            <div class="image-preview" id="imagePreview">
+                <img id="previewImg" class="preview-image" alt="Preview">
+                <div class="image-info">
+                    <div class="info-row">
+                        <span>Tên file:</span>
+                        <span id="fileName">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span>Kích thước:</span>
+                        <span id="fileSize">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span>Định dạng:</span>
+                        <span id="fileType">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span>Kích thước ảnh:</span>
+                        <span id="imageDimensions">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="format-section">
+            <div class="section-title">Chuyển Đổi Sang Định Dạng</div>
+            <div class="format-grid">
+                <button class="format-btn" data-format="png">PNG</button>
+                <button class="format-btn active" data-format="jpg">JPG</button>
+                <button class="format-btn" data-format="webp">WebP</button>
+                <button class="format-btn" data-format="bmp">BMP</button>
+                <button class="format-btn" data-format="gif">GIF</button>
+            </div>
+        </div>
+
+        <div class="quality-section">
+            <div class="quality-label">
+                <span>Chất lượng</span>
+                <span id="qualityValue">100%</span>
+            </div>
+            <input type="range" id="qualitySlider" class="quality-slider" min="10" max="100" value="100">
+        </div>
+
+        <div class="settings-grid">
+            <div class="setting-item">
+                <label for="maxWidth">Chiều rộng tối đa (px)</label>
+                <input type="number" id="maxWidth" value="0" min="0" placeholder="0 = không thay đổi">
+            </div>
+            <div class="setting-item">
+                <label for="maxHeight">Chiều cao tối đa (px)</label>
+                <input type="number" id="maxHeight" value="0" min="0" placeholder="0 = không thay đổi">
+            </div>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <div>Đang xử lý...</div>
+        </div>
+
+        <div class="button-group">
+            <button class="btn btn-convert" id="convertBtn" disabled>Chuyển Đổi</button>
+            <button class="btn btn-reset" id="resetBtn">Làm Mới</button>
+        </div>
+
+        <div class="footer">
+            <a href="https://nhut990.github.io/">Trang Chủ</a>
+            <div class="copyright">Created by Minh Nhựt<br>© 2026</div>
+        </div>
+    </div>
+
+    <script>
+        let uploadedFile = null;
+        let selectedFormat = 'jpg';
+
+        // Elements
+        const uploadArea = document.getElementById('uploadArea');
+        const imageInput = document.getElementById('imageInput');
+        const imagePreview = document.getElementById('imagePreview');
+        const previewImg = document.getElementById('previewImg');
+        const convertBtn = document.getElementById('convertBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const qualitySlider = document.getElementById('qualitySlider');
+        const qualityValue = document.getElementById('qualityValue');
+        const messageDiv = document.getElementById('message');
+        const loading = document.getElementById('loading');
+        const formatBtns = document.querySelectorAll('.format-btn');
+
+        // Upload area events
+        uploadArea.addEventListener('click', () => imageInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleImageUpload(files[0]);
+            }
+        });
+
+        imageInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleImageUpload(e.target.files[0]);
+            }
+        });
+
+        // Handle image upload
+        function handleImageUpload(file) {
+            if (!file.type.startsWith('image/')) {
+                showMessage('Vui lòng chọn file hình ảnh hợp lệ', 'error');
+                return;
+            }
+
+            uploadedFile = file;
+            const reader = new FileReader();
+
+            reader.onload = (e) => {
+                previewImg.src = e.target.result;
+                document.getElementById('fileName').textContent = file.name;
+                document.getElementById('fileSize').textContent = formatFileSize(file.size);
+                document.getElementById('fileType').textContent = file.type || 'unknown';
+
+                const img = new Image();
+                img.onload = () => {
+                    document.getElementById('imageDimensions').textContent = `${img.width} × ${img.height} px`;
+                };
+                img.src = e.target.result;
+
+                imagePreview.style.display = 'block';
+                convertBtn.disabled = false;
+            };
+
+            reader.readAsDataURL(file);
+        }
+
+        // Format selection
+        formatBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                formatBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                selectedFormat = btn.dataset.format;
+            });
+        });
+
+        // Quality slider
+        qualitySlider.addEventListener('input', (e) => {
+            qualityValue.textContent = e.target.value + '%';
+        });
+
+        // Convert button
+        convertBtn.addEventListener('click', convertImage);
+
+        // Reset button
+        resetBtn.addEventListener('click', () => {
+            uploadedFile = null;
+            imageInput.value = '';
+            imagePreview.style.display = 'none';
+            convertBtn.disabled = true;
+            messageDiv.classList.remove('success', 'error');
+            messageDiv.style.display = 'none';
+        });
+
+        // Convert image
+        function convertImage() {
+            if (!uploadedFile) {
+                showMessage('Vui lòng chọn hình ảnh', 'error');
+                return;
+            }
+
+            loading.style.display = 'block';
+            convertBtn.disabled = true;
+
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+
+            img.onload = () => {
+                let width = img.width;
+                let height = img.height;
+
+                // Resize if needed
+                const maxWidth = parseInt(document.getElementById('maxWidth').value) || 0;
+                const maxHeight = parseInt(document.getElementById('maxHeight').value) || 0;
+
+                if (maxWidth > 0 && width > maxWidth) {
+                    height = (height * maxWidth) / width;
+                    width = maxWidth;
+                }
+
+                if (maxHeight > 0 && height > maxHeight) {
+                    width = (width * maxHeight) / height;
+                    height = maxHeight;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                ctx.drawImage(img, 0, 0, width, height);
+
+                // Convert
+                const quality = parseInt(qualitySlider.value) / 100;
+                const mimeType = `image/${selectedFormat}`;
+
+                canvas.toBlob(
+                    (blob) => {
+                        downloadImage(blob, selectedFormat);
+                        loading.style.display = 'none';
+                        convertBtn.disabled = false;
+                        showMessage(`Chuyển đổi thành công sang ${selectedFormat.toUpperCase()}!`, 'success');
+                    },
+                    mimeType,
+                    selectedFormat === 'gif' ? undefined : quality
+                );
+            };
+
+            img.src = URL.createObjectURL(uploadedFile);
+        }
+
+        // Download image
+        function downloadImage(blob, format) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const originalName = uploadedFile.name.split('.')[0];
+            a.href = url;
+            a.download = `${originalName}.${format}`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Show message
+        function showMessage(text, type) {
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+            messageDiv.style.display = 'block';
+
+            if (type === 'success') {
+                setTimeout(() => {
+                    messageDiv.style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        // Format file size
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+        }
+    </script>
+</body>
+</html>
